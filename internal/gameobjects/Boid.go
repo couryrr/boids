@@ -6,13 +6,13 @@ import (
 
 var (
 	BoundaryDistance float32 = 80
-	BoundaryFactor   float32 = 0.25
 	Fov              float64 = 0
 	Separation       float64 = 20
+	BoundaryFactor   float32 = 0.25
 	BoundaryScale    float32 = 1.5
 	SeparationScale  float32 = 0.15
-	AlignmentScale   float32 = 0.15
-	CohesionScale    float32 = 0.15
+	AlignmentScale   float32 = 1
+	CohesionScale    float32 = 1
 )
 
 type Boid struct {
@@ -50,14 +50,16 @@ func (b *Boid) Steer(flock *Flock) {
 	culPos := rl.Vector2Zero()
 
 	for neighbor := range flock.All() {
-		b.Separate(neighbor, &culSep)
+		// b.Separate(neighbor, &culSep)
 		b.Align(neighbor, &culDir)
 		b.Cohesion(neighbor, &culPos)
 	}
 
+	// TODO: move the scale to inside each method?
 	b.AddDirection(rl.Vector2Normalize(rl.Vector2Scale(culSep, SeparationScale)))
 	b.AddDirection(rl.Vector2Normalize(rl.Vector2Scale(culDir, AlignmentScale)))
 	b.AddDirection(rl.Vector2Normalize(rl.Vector2Scale(culPos, CohesionScale)))
+	b.AddDirection(rl.Vector2Scale(b.Boundary(), BoundaryScale))
 }
 
 func (b *Boid) Separate(neighbor *Boid, cul *rl.Vector2) {
@@ -124,7 +126,6 @@ func (b *Boid) UpdatePosition() {
 // }
 
 func (b *Boid) Draw() {
-	rl.DrawRectangleLines(int32(BoundaryDistance), int32(BoundaryDistance), int32(rl.GetScreenWidth()-int(BoundaryDistance*2)), int32(rl.GetScreenHeight()-int(BoundaryDistance*2)), rl.Red)
 	rl.DrawCircleLines(int32(b.Position.X), int32(b.Position.Y), b.Radius, rl.Black)
 	// rl.DrawCircleLines(int32(b.Position.X), int32(b.Position.Y), float32(fov), rl.Green)
 	// rl.DrawCircleLines(int32(b.Position.X), int32(b.Position.Y), float32(separation), rl.Red)

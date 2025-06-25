@@ -23,16 +23,13 @@ func main() {
 		rl.ClearBackground(rl.White)
 		rl.DrawText("Boid Simulation", 5, 5, 20, rl.LightGray)
 
+		rl.DrawRectangleLines(int32(gameobjects.BoundaryDistance), int32(gameobjects.BoundaryDistance), int32(rl.GetScreenWidth()-int(gameobjects.BoundaryDistance*2)), int32(rl.GetScreenHeight()-int(gameobjects.BoundaryDistance*2)), rl.Red)
 		for boid := range flock.All() {
 			boid.Steer(flock)
 			boid.UpdatePosition()
-
-		}
-		for boid :=range flock.All(){
-			boid.AddDirection(rl.Vector2Scale(boid.Boundary(),gameobjects.BoundaryScale))
-			boid.UpdatePosition()
 			boid.Draw()
 		}
+
 		rl.EndDrawing()
 	}
 }
