@@ -1,4 +1,4 @@
-package gameobjects
+package gameobject
 
 import (
 	"iter"
@@ -22,6 +22,11 @@ func CreateFlock(quantity int) *Flock {
 	return &Flock{
 		boids: boids,
 	}
+}
+
+func (f *Flock) Add(pos rl.Vector2) {
+	boid := CreateBoid(len(f.boids), pos, rl.Vector2Zero())
+	f.boids = append(f.boids, boid)
 }
 
 func (f *Flock) All() iter.Seq[*Boid] {
