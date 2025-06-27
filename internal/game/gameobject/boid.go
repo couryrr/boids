@@ -20,15 +20,16 @@ var (
 )
 
 type Boid struct {
-	Id        int
-	Radius    float32
-	Position  rl.Vector2 // vector used for the x, y as a point
-	Direction rl.Vector2 // normalized vector for the direction
-	SeparateV rl.Vector2
-	AlignV    rl.Vector2
-	CohesionV rl.Vector2
-	BoundaryV rl.Vector2
-	Speed     float32 // constant motion
+	Id            int
+	Radius        float32
+	Position      rl.Vector2 // vector used for the x, y as a point
+	PrevDirection rl.Vector2
+	Direction     rl.Vector2 // normalized vector for the direction
+	SeparateV     rl.Vector2
+	AlignV        rl.Vector2
+	CohesionV     rl.Vector2
+	BoundaryV     rl.Vector2
+	Speed         float32 // constant motion
 }
 
 func RandomVector2() rl.Vector2 {
@@ -41,7 +42,7 @@ func RandomVector2() rl.Vector2 {
 func CreateBoid(id int, position rl.Vector2, direction rl.Vector2) *Boid {
 	return &Boid{
 		Id:        id,
-		Radius:    5,
+		Radius:    15,
 		Position:  position,
 		Direction: direction,
 		Speed:     2.5,
@@ -53,6 +54,7 @@ func (b *Boid) AddDirection(dir rl.Vector2) {
 }
 
 func (b *Boid) Steer(flock *Flock) {
+	b.PrevDirection = b.Direction
 	culSep := rl.Vector2Zero()
 
 	countSep := 0
@@ -142,32 +144,12 @@ func (b *Boid) UpdatePosition() {
 	b.Position = rl.Vector2Add(b.Position, rl.Vector2Scale(b.Direction, b.Speed))
 }
 
-// func (b *Boid) Warp() {
-// 	screenHeight := rl.GetScreenHeight()
-// 	screenWidth := rl.GetScreenWidth()
-// 	if b.Position.Y > float32(screenHeight) {
-// 		b.Position.Y = 0
-// 	}
-// 	if b.Position.Y < 0 {
-// 		b.Position.Y = float32(screenHeight)
-// 	}
-// 	if b.Position.X > float32(screenWidth) {
-// 		b.Position.X = 0
-// 	}
-// 	if b.Position.X < 0 {
-// 		b.Position.X = float32(screenWidth)
-// 	}
-// }
-
 func (b *Boid) Draw() {
 	rl.DrawCircleLines(int32(b.Position.X), int32(b.Position.Y), b.Radius, rl.Black)
 }
 
 func (b *Boid) DrawDebug() {
-	rl.DrawCircleLines(int32(b.Position.X), int32(b.Position.Y), float32(Fov), rl.Green)
 	rl.DrawCircleLines(int32(b.Position.X), int32(b.Position.Y), float32(Separation), rl.Red)
-	rl.DrawLineV(b.Position, b.Direction, rl.Red)
-	// rl.DrawLineV(b.Position, rl.Vector2Scale(b.SeparateV, b.Speed), rl.Red)
-	// rl.DrawLineV(b.Position, rl.Vector2Scale(b.AlignV, b.Radius), rl.Green)
-	// rl.DrawLineV(b.Position, rl.Vector2Scale(b.CohesionV, b.Speed), rl.Blue)
+	rl.DrawCircleLines(int32(b.Position.X), int32(b.Position.Y), float32(Fov), rl.Green)
+	rl.DrawLineV(b.Position, rl.Vector2Scale(rl.Vector2Add(b.PrevDirection, b.Position), b.Speed), rl.Purple)
 }

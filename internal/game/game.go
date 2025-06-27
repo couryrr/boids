@@ -11,10 +11,10 @@ type Game struct {
 	Flock     *gameobject.Flock
 }
 
-func (g *Game) Load() {
+func (g *Game) Load(flockSize int) {
 	g.isPlaying = false
-	g.isDebug = false
-	g.Flock = gameobject.CreateFlock(10)
+	g.isDebug = true
+	g.Flock = gameobject.CreateFlock(flockSize)
 }
 
 func (g *Game) Update() {
