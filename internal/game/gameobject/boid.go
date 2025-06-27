@@ -7,10 +7,10 @@ import (
 // FIXME: just doing thing badly for the moment...
 var (
 	BoundaryDistance float32 = 80
-	Fov              float64 = 90
-	Separation       float64 = 35
+	Fov              float64 = 125
+	Separation       float64 = 50
 	BoundaryFactor   float32 = 1
-	BoundaryScale    float32 = 2
+	BoundaryScale    float32 = 50
 	SeparationScale  float32 = 0.15
 	AlignmentScale   float32 = 0.25
 	CohesionScale    float32 = 0.25
@@ -32,20 +32,13 @@ type Boid struct {
 	Speed         float32 // constant motion
 }
 
-func RandomVector2() rl.Vector2 {
-	return rl.Vector2{
-		X: float32(rl.GetRandomValue(int32(BoundaryDistance), int32(rl.GetScreenWidth()-int(BoundaryDistance)))),
-		Y: float32(rl.GetRandomValue(int32(BoundaryDistance), int32(rl.GetScreenHeight()-int(BoundaryDistance)))),
-	}
-}
-
-func CreateBoid(id int, position rl.Vector2, direction rl.Vector2) *Boid {
+func CreateBoid(id int, position rl.Vector2, direction rl.Vector2, speed float32) *Boid {
 	return &Boid{
 		Id:        id,
-		Radius:    15,
+		Radius:    5,
 		Position:  position,
 		Direction: direction,
-		Speed:     2.5,
+		Speed:     .02,
 	}
 }
 
@@ -53,46 +46,43 @@ func (b *Boid) AddDirection(dir rl.Vector2) {
 	b.Direction = rl.Vector2Normalize(rl.Vector2Add(dir, b.Direction))
 }
 
-func (b *Boid) Steer(flock *Flock) {
-	b.PrevDirection = b.Direction
-	culSep := rl.Vector2Zero()
-
-	countSep := 0
-	culDir := rl.Vector2Zero()
-	countDir := 0
-	culPos := rl.Vector2Zero()
-	countPos := 0
-
-	for neighbor := range flock.All() {
-		if ShouldSeparate {
-			b.Separate(neighbor, &culSep, &countSep)
-		}
-
-		if ShouldAlign {
-			b.Align(neighbor, &culDir, &countDir)
-		}
-
-		if ShouldCohesion {
-			b.Cohesion(neighbor, &culPos, &countPos)
-		}
-	}
-
-	if countSep > 0 {
-		b.SeparateV = rl.Vector2Normalize(rl.Vector2{X: culSep.X / float32(countSep), Y: culSep.Y / float32(countSep)})
-		b.AddDirection(rl.Vector2Scale(b.SeparateV, SeparationScale))
-	}
-
-	if countDir > 0 {
-		b.AlignV = rl.Vector2Normalize(rl.Vector2{X: culDir.X / float32(countDir), Y: culDir.Y / float32(countDir)})
-		b.AddDirection(rl.Vector2Scale(b.AlignV, AlignmentScale))
-	}
-
-	if countPos > 0 {
-		b.CohesionV = rl.Vector2Normalize(rl.Vector2{X: culPos.X / float32(countPos), Y: culPos.Y / float32(countPos)})
-		b.AddDirection(rl.Vector2Scale(b.CohesionV, CohesionScale))
-	}
-
-	b.AddDirection(rl.Vector2Scale(b.Boundary(), BoundaryScale))
+func (b *Boid) GetSteeringForces(flock *Flock) {
+	// b.PrevDirection = b.Direction
+	// culSep := rl.Vector2Zero()
+	//
+	// countSep := 0
+	// culDir := rl.Vector2Zero()
+	// countDir := 0
+	// culPos := rl.Vector2Zero()
+	// countPos := 0
+	//
+	// for neighbor := range flock.All() {
+	// 	if ShouldSeparate {
+	// 		b.Separate(neighbor, &culSep, &countSep)
+	// 	}
+	//
+	// 	if ShouldAlign {
+	// 		b.Align(neighbor, &culDir, &countDir)
+	// 	}
+	//
+	// 	if ShouldCohesion {
+	// 		b.Cohesion(neighbor, &culPos, &countPos)
+	// 	}
+	// }
+	//
+	// if countSep > 0 {
+	// 	b.SeparateV = rl.Vector2Scale(culSep, SeparationScale)
+	// }
+	//
+	// if countDir > 0 {
+	// 	b.AlignV = rl.Vector2Scale(culDir, AlignmentScale)
+	// }
+	//
+	// if countPos > 0 {
+	// 	b.CohesionV = rl.Vector2Scale(culPos, CohesionScale)
+	// }
+	//
+	b.BoundaryV = rl.Vector2Scale(rl.Vector2Normalize(b.Boundary()), BoundaryScale)
 }
 
 func (b *Boid) Separate(neighbor *Boid, cul *rl.Vector2, count *int) {
@@ -137,11 +127,15 @@ func (b Boid) Boundary() rl.Vector2 {
 		force.Y = BoundaryFactor - b.Position.Y
 	}
 
-	return rl.Vector2Normalize(force)
+	return force
 }
 
 func (b *Boid) UpdatePosition() {
+	// rl.TraceLog(rl.LogDebug, "The boid: %v", b)
+	// prev := b.Position
+	b.Direction = rl.Vector2Add(b.Direction, b.BoundaryV)
 	b.Position = rl.Vector2Add(b.Position, rl.Vector2Scale(b.Direction, b.Speed))
+	// rl.TraceLog(rl.LogDebug, "The boid at: %v should move to %v	", prev, b.Position)
 }
 
 func (b *Boid) Draw() {
@@ -151,5 +145,7 @@ func (b *Boid) Draw() {
 func (b *Boid) DrawDebug() {
 	rl.DrawCircleLines(int32(b.Position.X), int32(b.Position.Y), float32(Separation), rl.Red)
 	rl.DrawCircleLines(int32(b.Position.X), int32(b.Position.Y), float32(Fov), rl.Green)
-	rl.DrawLineV(b.Position, rl.Vector2Scale(rl.Vector2Add(b.PrevDirection, b.Position), b.Speed), rl.Purple)
+	rl.DrawLineV(b.Position, rl.Vector2Add(b.Position, rl.Vector2Scale(b.Direction, 0.5)), rl.Purple)
+	rl.DrawLineV(b.Position, rl.Vector2Add(b.Position, rl.Vector2Scale(b.BoundaryV, 0.5)), rl.Red)
+	rl.DrawLineV(b.Position, rl.Vector2Add(b.Position, rl.Vector2Scale(rl.Vector2Add(b.Direction, b.BoundaryV), 0.5)), rl.Gold)
 }

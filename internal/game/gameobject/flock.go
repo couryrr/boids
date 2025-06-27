@@ -3,6 +3,7 @@ package gameobject
 import (
 	"iter"
 
+	"github.com/couryrr/boids/internal/game/util"
 	rl "github.com/gen2brain/raylib-go/raylib"
 )
 
@@ -16,8 +17,10 @@ func CreateFlock(quantity int) *Flock {
 	for i := range quantity {
 		boids = append(boids, CreateBoid(
 			i,
-			RandomVector2(),
-			rl.Vector2Normalize(RandomVector2())))
+			util.RandomVector2(BoundaryDistance, float32(rl.GetScreenHeight()-int(BoundaryDistance))),
+			rl.Vector2Normalize(util.RandomVector2(BoundaryDistance, float32(rl.GetScreenHeight()-int(BoundaryDistance)))), 
+			0.2))
+
 	}
 	return &Flock{
 		boids: boids,
@@ -25,7 +28,7 @@ func CreateFlock(quantity int) *Flock {
 }
 
 func (f *Flock) Add(pos rl.Vector2) {
-	boid := CreateBoid(len(f.boids), pos, rl.Vector2Zero())
+	boid := CreateBoid(len(f.boids), pos, util.RandomVector2(BoundaryDistance, BoundaryDistance+200), 0.2)
 	f.boids = append(f.boids, boid)
 }
 

@@ -20,7 +20,7 @@ func (g *Game) Load(flockSize int) {
 func (g *Game) Update() {
 	if g.isPlaying {
 		for boid := range g.Flock.All() {
-			boid.Steer(g.Flock)
+			boid.GetSteeringForces(g.Flock)
 		}
 		for boid := range g.Flock.All() {
 			boid.UpdatePosition()
@@ -33,7 +33,14 @@ func (g *Game) Draw() {
 	rl.BeginDrawing()
 	rl.ClearBackground(rl.White)
 	rl.DrawText("Boid Simulation", 5, 5, 20, rl.LightGray)
-	
+
+	state := "Paused"
+	if g.isPlaying {
+		state = "Playing"
+	}
+
+	rl.DrawText(state, 5, 30, 20, rl.LightGray)
+
 	separateColor, alignColor, cohesionColor := rl.Blue, rl.Blue, rl.Blue
 	
 	if !gameobject.ShouldSeparate {
