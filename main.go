@@ -1,7 +1,7 @@
 package main
 
 import (
-	"github.com/couryrr/boids/internal/game"
+	"github.com/couryrr/boids/internal/simulation"
 	rl "github.com/gen2brain/raylib-go/raylib"
 )
 
@@ -16,7 +16,7 @@ func main() {
 	rl.InitWindow(width, height, "Boids Simulation One Day!")
 	defer rl.CloseWindow()
 	rl.SetTargetFPS(60)
-	game := game.Game{}
+	game := simulation.Simulation{}
 	game.Load(0)
 	for !rl.WindowShouldClose() {
 		game.Update()
