@@ -1,35 +1,20 @@
-package gameobject
+package objects
 
 import (
 	rl "github.com/gen2brain/raylib-go/raylib"
 )
 
-// FIXME: just doing thing badly for the moment...
-var (
-	BoundaryDistance float32 = 80
-	Fov              float64 = 125
-	Separation       float64 = 50
-	BoundaryFactor   float32 = 1
-	BoundaryScale    float32 = 50
-	SeparationScale  float32 = 0.15
-	AlignmentScale   float32 = 0.25
-	CohesionScale    float32 = 0.25
-	ShouldSeparate   bool    = true
-	ShouldAlign      bool    = true
-	ShouldCohesion   bool    = true
-)
-
 type Boid struct {
 	Id            int
 	Radius        float32
-	Position      rl.Vector2 // vector used for the x, y as a point
+	Position      rl.Vector2 
 	PrevDirection rl.Vector2
-	Direction     rl.Vector2 // normalized vector for the direction
+	Direction     rl.Vector2 
 	SeparateV     rl.Vector2
 	AlignV        rl.Vector2
 	CohesionV     rl.Vector2
 	BoundaryV     rl.Vector2
-	Speed         float32 // constant motion
+	Speed         float32 
 }
 
 func CreateBoid(id int, position rl.Vector2, direction rl.Vector2, speed float32) *Boid {
@@ -46,8 +31,8 @@ func (b *Boid) AddDirection(dir rl.Vector2) {
 	b.Direction = rl.Vector2Normalize(rl.Vector2Add(dir, b.Direction))
 }
 
-func (b *Boid) GetSteeringForces(flock *Flock) {
-	// b.PrevDirection = b.Direction
+func (b *Boid) GetSteeringForces(factors *Factors, flock *Flock) {
+	b.PrevDirection = b.Direction
 	// culSep := rl.Vector2Zero()
 	//
 	// countSep := 0
@@ -82,9 +67,10 @@ func (b *Boid) GetSteeringForces(flock *Flock) {
 	// 	b.CohesionV = rl.Vector2Scale(culPos, CohesionScale)
 	// }
 	//
-	b.BoundaryV = rl.Vector2Scale(rl.Vector2Normalize(b.Boundary()), BoundaryScale)
+	b.BoundaryV = rl.Vector2Scale(rl.Vector2Normalize(b.Boundary(factors)), factors.BoundaryScale)
 }
 
+/*
 func (b *Boid) Separate(neighbor *Boid, cul *rl.Vector2, count *int) {
 	distance := rl.Vector2Distance(b.Position, neighbor.Position)
 	if b.Id != neighbor.Id && float64(distance) <= Separation {
@@ -108,23 +94,24 @@ func (b *Boid) Cohesion(neighbor *Boid, cul *rl.Vector2, count *int) {
 		*cul = rl.Vector2Add(*cul, neighbor.Position)
 	}
 }
+*/
 
-func (b Boid) Boundary() rl.Vector2 {
+func (b *Boid) Boundary(factors *Factors) rl.Vector2 {
 	screenWidth := float32(rl.GetScreenWidth())
 	screenHeight := float32(rl.GetScreenHeight())
 
 	force := rl.Vector2Zero()
-	if b.Position.X-float32(Fov) <= BoundaryDistance {
-		force.X = b.Position.X + BoundaryFactor
+	if b.Position.X-float32(factors.Fov) <= factors.BoundaryDistance {
+		force.X = b.Position.X + factors.BoundaryFactor
 	}
-	if b.Position.X+float32(Fov) > screenWidth-BoundaryDistance {
-		force.X = BoundaryFactor - b.Position.X
+	if b.Position.X+float32(factors.Fov) > screenWidth-factors.BoundaryDistance {
+		force.X = factors.BoundaryFactor - b.Position.X
 	}
-	if b.Position.Y-float32(Fov) <= BoundaryDistance {
-		force.Y = b.Position.Y + BoundaryFactor
+	if b.Position.Y-float32(factors.Fov) <= factors.BoundaryDistance {
+		force.Y = b.Position.Y + factors.BoundaryFactor
 	}
-	if b.Position.Y+float32(Fov) > screenHeight-BoundaryDistance {
-		force.Y = BoundaryFactor - b.Position.Y
+	if b.Position.Y+float32(factors.Fov) > screenHeight-factors.BoundaryDistance {
+		force.Y = factors.BoundaryFactor - b.Position.Y
 	}
 
 	return force
@@ -142,9 +129,9 @@ func (b *Boid) Draw() {
 	rl.DrawCircleLines(int32(b.Position.X), int32(b.Position.Y), b.Radius, rl.Black)
 }
 
-func (b *Boid) DrawDebug() {
-	rl.DrawCircleLines(int32(b.Position.X), int32(b.Position.Y), float32(Separation), rl.Red)
-	rl.DrawCircleLines(int32(b.Position.X), int32(b.Position.Y), float32(Fov), rl.Green)
+func (b *Boid) DrawDebug(factors *Factors) {
+	rl.DrawCircleLines(int32(b.Position.X), int32(b.Position.Y), float32(factors.Separation), rl.Red)
+	rl.DrawCircleLines(int32(b.Position.X), int32(b.Position.Y), float32(factors.Fov), rl.Green)
 	rl.DrawLineV(b.Position, rl.Vector2Add(b.Position, rl.Vector2Scale(b.Direction, 0.5)), rl.Purple)
 	rl.DrawLineV(b.Position, rl.Vector2Add(b.Position, rl.Vector2Scale(b.BoundaryV, 0.5)), rl.Red)
 	rl.DrawLineV(b.Position, rl.Vector2Add(b.Position, rl.Vector2Scale(rl.Vector2Add(b.Direction, b.BoundaryV), 0.5)), rl.Gold)
