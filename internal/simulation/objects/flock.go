@@ -28,7 +28,8 @@ func CreateFlock(boundry float32, quantity int) *Flock {
 }
 
 func (f *Flock) Add(boundry float32, pos rl.Vector2) {
-	boid := CreateBoid(len(f.boids), pos, util.RandomVector2(boundry, boundry+200), 0.2)
+	boid := CreateBoid(len(f.boids), pos, util.RandomVector2(0, 100), 0.2)
+	rl.TraceLog(rl.LogDebug, "Made: %v", boid.Direction)
 	f.boids = append(f.boids, boid)
 }
 
