@@ -20,10 +20,10 @@ func (s *Simulation) Load(flockSize int) {
 }
 
 func (s *Simulation) Update() {
+	for boid := range s.Flock.All() {
+		boid.GetSteeringForces(&s.state.Factors, s.Flock)
+	}
 	if s.isPlaying {
-		for boid := range s.Flock.All() {
-			boid.GetSteeringForces(&s.state.Factors, s.Flock)
-		}
 		for boid := range s.Flock.All() {
 			boid.UpdatePosition()
 		}
@@ -86,13 +86,13 @@ func (s *Simulation) Input() {
 	if rl.IsKeyPressed(rl.KeySpace) {
 		s.isPlaying = !s.isPlaying
 	}
-	if rl.IsKeyPressed(rl.KeyA) {
+	if rl.IsKeyPressed(rl.KeyOne) {
 		s.state.ShouldAlign = !s.state.ShouldAlign
 	}
-	if rl.IsKeyPressed(rl.KeyS) {
+	if rl.IsKeyPressed(rl.KeyTwo) {
 		s.state.ShouldSeparate = !s.state.ShouldSeparate
 	}
-	if rl.IsKeyPressed(rl.KeyC) {
+	if rl.IsKeyPressed(rl.KeyThree) {
 		s.state.ShouldCohesion = !s.state.ShouldCohesion
 	}
 }
