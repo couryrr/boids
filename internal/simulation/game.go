@@ -16,7 +16,7 @@ func (s *Simulation) Load(flockSize int) {
 	s.state = objects.CreateState()
 	s.isPlaying = false
 	s.isDebug = true
-	s.Flock = objects.CreateFlock(s.state.Factors.BoundaryDistance, flockSize)
+	s.Flock = objects.CreateFlock(s.state.Factors.BoundaryDistance, flockSize, &s.state.Factors)
 }
 
 func (s *Simulation) Update() {
@@ -73,7 +73,7 @@ func (s *Simulation) Draw() {
 	rl.EndDrawing()
 }
 func (s *Simulation) Click(x, y int32) {
-	s.Flock.Add(s.state.Factors.BoundaryDistance, rl.Vector2{X: float32(x), Y: float32(y)})
+	s.Flock.Add(s.state.Factors.BoundaryDistance, rl.Vector2{X: float32(x), Y: float32(y)}, &s.state.Factors)
 }
 
 func (s *Simulation) Input() {
