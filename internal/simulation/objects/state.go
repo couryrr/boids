@@ -1,6 +1,8 @@
 package objects
 
 type Factors struct {
+	MinSpeed         float64
+	MaxSpeed         float64
 	Fov              float64
 	Separation       float64
 	BoundaryDistance float32
@@ -21,11 +23,13 @@ type State struct {
 func CreateState() State {
 	return State{
 		Factors: Factors{
+			MinSpeed:         7,
+			MaxSpeed:         7,
 			Fov:              100,
 			Separation:       50,
-			BoundaryDistance: 20,
-			BoundaryFactor:   1,
-			BoundaryScale:    0.15,
+			BoundaryDistance: 50,
+			BoundaryFactor:   150,
+			BoundaryScale:    7.00,
 			SeparationScale:  0.15,
 			AlignmentScale:   0.25,
 			CohesionScale:    0.25,
@@ -35,4 +39,3 @@ func CreateState() State {
 		ShouldCohesion: true,
 	}
 }
-
