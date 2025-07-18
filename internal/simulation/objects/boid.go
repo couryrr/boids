@@ -20,45 +20,50 @@ func CreateBoid(id int, position rl.Vector2, direction rl.Vector2, speed float64
 		Position:  position,
 		Direction: direction,
 		Speed:     speed,
+		BoundaryV: &rl.Vector2{},
 	}
 }
 
 func (b *Boid) GetSteeringForces(factors *Factors, flock *Flock) {
-	b.BoundaryV = b.Boundary(factors)
+	*b.BoundaryV = b.Boundary(factors)
 }
 
-func (b *Boid) Boundary(factors *Factors) *rl.Vector2 {
+func (b *Boid) Boundary(factors *Factors) rl.Vector2 {
 	screenWidth := float32(rl.GetScreenWidth())
 	screenHeight := float32(rl.GetScreenHeight())
 
 	force := rl.Vector2Zero()
-
 	if b.Position.X <= factors.BoundaryDistance {
-		force.X += factors.BoundaryFactor
+		d := factors.BoundaryDistance - b.Position.X
+		force.X += factors.BoundaryFactor * d
 	}
 	if b.Position.X > screenWidth-factors.BoundaryDistance {
-		force.X -= factors.BoundaryFactor
+		d := b.Position.X - (screenWidth - factors.BoundaryDistance)
+		force.X -= factors.BoundaryFactor * d
 	}
 	if b.Position.Y <= factors.BoundaryDistance {
-		force.Y += factors.BoundaryFactor
+		d := factors.BoundaryDistance - b.Position.Y
+		force.Y += factors.BoundaryFactor * d
 	}
 	if b.Position.Y > screenHeight-factors.BoundaryDistance {
-		force.Y -= factors.BoundaryFactor
+		d := b.Position.Y - (screenHeight - factors.BoundaryDistance)
+		force.Y -= factors.BoundaryFactor * d
 	}
 
-	if !rl.Vector2Equals(force, rl.Vector2Zero()) {
-		force = rl.Vector2Normalize(force)
+	mag := rl.Vector2Length(force)
+	if mag > factors.BoundaryScale {
+		force = rl.Vector2Scale(rl.Vector2Normalize(force), factors.BoundaryScale)
 	}
-	force = rl.Vector2Scale(force, factors.BoundaryScale)
 
-	return &force
+	return force
 }
 
 func (b *Boid) UpdatePosition() {
-	res := rl.Vector2Zero()
-	res = rl.Vector2Add(res, *b.BoundaryV)
-	b.Direction = rl.Vector2Add(b.Direction, res)
-	vel := rl.Vector2Scale(rl.Vector2Normalize(b.Direction), float32(b.Speed))
+	if !rl.Vector2Equals(*b.BoundaryV, rl.Vector2Zero()) {
+		desiredDir := rl.Vector2Normalize(rl.Vector2Add(b.Direction, *b.BoundaryV))
+		b.Direction = rl.Vector2Normalize(rl.Vector2Lerp(b.Direction, desiredDir, 0.1))
+	}
+	vel := rl.Vector2Scale(b.Direction, float32(b.Speed))
 	b.Position = rl.Vector2Add(b.Position, vel)
 }
 
