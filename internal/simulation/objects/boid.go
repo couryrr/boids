@@ -33,22 +33,8 @@ func (b *Boid) Boundary(factors *Factors) rl.Vector2 {
 	screenHeight := float32(rl.GetScreenHeight())
 
 	force := rl.Vector2Zero()
-	if b.Position.X <= factors.BoundaryDistance {
-		d := factors.BoundaryDistance - b.Position.X
-		force.X += factors.BoundaryFactor * d
-	}
-	if b.Position.X > screenWidth-factors.BoundaryDistance {
-		d := b.Position.X - (screenWidth - factors.BoundaryDistance)
-		force.X -= factors.BoundaryFactor * d
-	}
-	if b.Position.Y <= factors.BoundaryDistance {
-		d := factors.BoundaryDistance - b.Position.Y
-		force.Y += factors.BoundaryFactor * d
-	}
-	if b.Position.Y > screenHeight-factors.BoundaryDistance {
-		d := b.Position.Y - (screenHeight - factors.BoundaryDistance)
-		force.Y -= factors.BoundaryFactor * d
-	}
+	force.X += isColliding(b.Position.X, float32(factors.Fov), factors.BoundaryDistance, factors.BoundaryFactor, screenWidth)
+	force.Y += isColliding(b.Position.Y, float32(factors.Fov), factors.BoundaryDistance, factors.BoundaryFactor, screenHeight)
 
 	mag := rl.Vector2Length(force)
 	if mag > factors.BoundaryScale {
@@ -74,8 +60,20 @@ func (b *Boid) Draw() {
 func (b *Boid) DrawDebug(factors *Factors) {
 	rl.DrawCircleLines(int32(b.Position.X), int32(b.Position.Y), float32(factors.Separation), rl.Red)
 	rl.DrawCircleLines(int32(b.Position.X), int32(b.Position.Y), float32(factors.Fov), rl.Green)
-	rl.DrawLineV(b.Position, rl.Vector2Add(b.Position, rl.Vector2Scale(b.Direction, 5)), rl.Purple)
+	rl.DrawLineV(b.Position, rl.Vector2Add(b.Position, rl.Vector2Scale(b.Direction, 15)), rl.Purple)
 	if b.BoundaryV != nil {
-		rl.DrawLineV(b.Position, rl.Vector2Add(b.Position, rl.Vector2Scale(*b.BoundaryV, 5)), rl.Red)
+		rl.DrawLineV(b.Position, rl.Vector2Add(b.Position, rl.Vector2Scale(*b.BoundaryV, 15)), rl.Red)
 	}
+}
+
+func isColliding(part, fov, boundary, factor, screen float32) float32 {
+	if part-fov <= boundary {
+		d := boundary - (part - fov)
+		return factor * d
+	}
+	if part+fov > screen-boundary {
+		d := part + fov - screen - boundary
+		return -1 * factor * d
+	}
+	return 0
 }
