@@ -31,13 +31,10 @@ func (fa *ForceAccumulator) Value() (rl.Vector2, error) {
 func (fa *ForceAccumulator) Increment(vec rl.Vector2) {
 	fa.count += 1
 	if fa.total == nil {
-		fa.total = &rl.Vector2{
-			X: 0,
-			Y: 0,
-		}
+		zero := rl.Vector2Zero()
+		fa.total = &zero
 	}
-	temp := rl.Vector2Add(*fa.total, vec)
-	fa.total = &temp
+	*fa.total = rl.Vector2Add(*fa.total, vec)
 }
 
 func RandomVector2(min, max float32) rl.Vector2 {

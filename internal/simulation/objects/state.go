@@ -8,7 +8,7 @@ type Factors struct {
 	BoundaryDistance float32
 	BoundaryFactor   float32
 	BoundaryScale    float32
-	SeparationScale  float32
+	AvoidanceScale   float32
 	AlignmentScale   float32
 	CohesionScale    float32
 }
@@ -30,7 +30,7 @@ func CreateState() State {
 			BoundaryDistance: 10,
 			BoundaryFactor:   150,
 			BoundaryScale:    7.00,
-			SeparationScale:  0.15,
+			AvoidanceScale:   0.25,
 			AlignmentScale:   0.25,
 			CohesionScale:    0.25,
 		},
