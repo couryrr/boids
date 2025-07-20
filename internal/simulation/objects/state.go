@@ -23,8 +23,8 @@ type State struct {
 func CreateState() State {
 	return State{
 		Factors: Factors{
-			MinSpeed:         7,
-			MaxSpeed:         14,
+			MinSpeed:         2,
+			MaxSpeed:         6,
 			Fov:              100,
 			Separation:       50,
 			BoundaryDistance: 10,

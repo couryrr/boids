@@ -48,12 +48,7 @@ func (b *Boid) Boundary(factors *Factors) rl.Vector2 {
 	force.X += isColliding(b.Position.X, float32(factors.Fov), factors.BoundaryDistance, factors.BoundaryFactor, screenWidth)
 	force.Y += isColliding(b.Position.Y, float32(factors.Fov), factors.BoundaryDistance, factors.BoundaryFactor, screenHeight)
 
-	mag := rl.Vector2Length(force)
-	if mag > factors.BoundaryScale {
-		force = rl.Vector2Scale(rl.Vector2Normalize(force), factors.BoundaryScale)
-	}
-
-	return force
+	return rl.Vector2Scale(rl.Vector2Normalize(force), factors.BoundaryScale)
 }
 
 func (b *Boid) Avoidance(neighbor *Boid, factors *Factors, accumulator *util.ForceAccumulator) {
