@@ -1,31 +1,43 @@
 package objects
 
 import (
+	"github.com/couryrr/boids/internal/simulation/util"
 	rl "github.com/gen2brain/raylib-go/raylib"
 )
 
 type Boid struct {
-	Id        int
-	Radius    float32
-	Position  rl.Vector2
-	Direction rl.Vector2
-	BoundaryV *rl.Vector2
-	Speed     float64
+	Id         int
+	Radius     float32
+	Position   rl.Vector2
+	Direction  rl.Vector2
+	BoundaryV  *rl.Vector2
+	AvoidanceV *rl.Vector2
+	Speed      float64
 }
 
 func CreateBoid(id int, position rl.Vector2, direction rl.Vector2, speed float64) *Boid {
 	return &Boid{
-		Id:        id,
-		Radius:    5,
-		Position:  position,
-		Direction: direction,
-		Speed:     speed,
-		BoundaryV: &rl.Vector2{},
+		Id:         id,
+		Radius:     5,
+		Position:   position,
+		Direction:  direction,
+		Speed:      speed,
+		BoundaryV:  &rl.Vector2{},
+		AvoidanceV: &rl.Vector2{},
 	}
 }
 
 func (b *Boid) GetSteeringForces(factors *Factors, flock *Flock) {
 	*b.BoundaryV = b.Boundary(factors)
+
+	avoidAcc := &util.ForceAccumulator{}
+	for neighbor := range flock.All() {
+		b.Avoidance(neighbor, factors, avoidAcc)
+	}
+	value, err := avoidAcc.Value()
+	if err == nil {
+		*b.AvoidanceV = rl.Vector2Scale(rl.Vector2Normalize(value), factors.AvoidanceScale)
+	}
 }
 
 func (b *Boid) Boundary(factors *Factors) rl.Vector2 {
@@ -42,6 +54,13 @@ func (b *Boid) Boundary(factors *Factors) rl.Vector2 {
 	}
 
 	return force
+}
+
+func (b *Boid) Avoidance(neighbor *Boid, factors *Factors, accumulator *util.ForceAccumulator) {
+	d := rl.Vector2Distance(b.Position, neighbor.Position)
+	if d <= float32(factors.Separation) {
+		accumulator.Increment(rl.Vector2Subtract(b.Position, neighbor.Position))
+	}
 }
 
 func (b *Boid) UpdatePosition() {
@@ -63,6 +82,9 @@ func (b *Boid) DrawDebug(factors *Factors) {
 	rl.DrawLineV(b.Position, rl.Vector2Add(b.Position, rl.Vector2Scale(b.Direction, 15)), rl.Purple)
 	if b.BoundaryV != nil {
 		rl.DrawLineV(b.Position, rl.Vector2Add(b.Position, rl.Vector2Scale(*b.BoundaryV, 15)), rl.Red)
+	}
+	if b.AvoidanceV != nil {
+		rl.DrawLineV(b.Position, rl.Vector2Add(b.Position, rl.Vector2Scale(*b.AvoidanceV, 15)), rl.Blue)
 	}
 }
 
