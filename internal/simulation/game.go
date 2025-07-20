@@ -77,6 +77,15 @@ func (s *Simulation) Click(x, y int32) {
 }
 
 func (s *Simulation) Input() {
+	if rl.IsKeyPressed(rl.KeyF11) {	
+		display := rl.GetCurrentMonitor()
+		if rl.IsWindowFullscreen(){
+			rl.SetWindowSize(1920, 1080)
+		} else {
+			rl.SetWindowSize(rl.GetMonitorWidth(display), rl.GetMonitorHeight(display))
+		}
+		rl.ToggleFullscreen()
+	}
 	if rl.IsMouseButtonPressed(rl.MouseLeftButton) {
 		s.Click(rl.GetMouseX(), rl.GetMouseY())
 	}
