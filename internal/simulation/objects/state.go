@@ -32,7 +32,7 @@ func CreateState() State {
 			BoundaryScale:    7.00,
 			AvoidanceScale:   4.50,
 			AlignmentScale:   2.50,
-			CohesionScale:    1.70,
+			CohesionScale:    2.70,
 		},
 		ShouldSeparate: true,
 		ShouldAlign:    true,

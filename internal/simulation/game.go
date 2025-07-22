@@ -2,6 +2,7 @@ package simulation
 
 import (
 	"github.com/couryrr/boids/internal/simulation/objects"
+	gui "github.com/gen2brain/raylib-go/raygui"
 	rl "github.com/gen2brain/raylib-go/raylib"
 )
 
@@ -12,14 +13,27 @@ type Simulation struct {
 	Flock     *objects.Flock
 }
 
+var (
+	avoid    int32 = 0
+	align    int32 = 0
+	cohesion int32 = 0
+)
+
 func (s *Simulation) Load(flockSize int) {
 	s.state = objects.CreateState()
+	avoid = int32(s.state.Factors.AvoidanceScale)
+	align = int32(s.state.Factors.AlignmentScale)
+	cohesion = int32(s.state.Factors.CohesionScale)
 	s.isPlaying = false
 	s.isDebug = true
 	s.Flock = objects.CreateFlock(s.state.Factors.BoundaryDistance, flockSize, &s.state.Factors)
 }
 
 func (s *Simulation) Update() {
+	s.state.Factors.AvoidanceScale = float32(avoid)
+	s.state.Factors.AlignmentScale = float32(align)
+	s.state.Factors.CohesionScale = float32(cohesion)
+
 	for boid := range s.Flock.All() {
 		boid.GetSteeringForces(&s.state.Factors, s.Flock)
 	}
@@ -43,23 +57,29 @@ func (s *Simulation) Draw() {
 
 	rl.DrawText(stateText, 5, 30, 20, rl.LightGray)
 
-	separateColor, alignColor, cohesionColor := rl.Blue, rl.Blue, rl.Blue
+	gui.Spinner(rl.Rectangle{
+		X:      200,
+		Y:      5,
+		Width:  125,
+		Height: 30,
+	},
+		"", &avoid, 0, 100, true)
 
-	if !s.state.ShouldSeparate {
-		separateColor = rl.Red
-	}
+	gui.Spinner(rl.Rectangle{
+		X:      350,
+		Y:      5,
+		Width:  125,
+		Height: 30,
+	},
+		"", &align, 0, 100, true)
 
-	if !s.state.ShouldAlign {
-		alignColor = rl.Red
-	}
-
-	if !s.state.ShouldCohesion {
-		cohesionColor = rl.Red
-	}
-
-	rl.DrawText("Separate", 200, 5, 20, separateColor)
-	rl.DrawText("Align", 350, 5, 20, alignColor)
-	rl.DrawText("Cohesion", 450, 5, 20, cohesionColor)
+	gui.Spinner(rl.Rectangle{
+		X:      500,
+		Y:      5,
+		Width:  125,
+		Height: 30,
+	},
+		"", &cohesion, 0, 100, true)
 
 	for boid := range s.Flock.All() {
 		boid.Draw()
@@ -77,9 +97,9 @@ func (s *Simulation) Click(x, y int32) {
 }
 
 func (s *Simulation) Input() {
-	if rl.IsKeyPressed(rl.KeyF11) {	
+	if rl.IsKeyPressed(rl.KeyF11) {
 		display := rl.GetCurrentMonitor()
-		if rl.IsWindowFullscreen(){
+		if rl.IsWindowFullscreen() {
 			rl.SetWindowSize(1920, 1080)
 		} else {
 			rl.SetWindowSize(rl.GetMonitorWidth(display), rl.GetMonitorHeight(display))
